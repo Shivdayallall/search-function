@@ -1,65 +1,65 @@
+
 // Document links and Api
-const URL = '';
 const stockList = document.getElementById("stockList");
 const searchBar = document.getElementById("searchBar");
 
 let stockArray = [];
 let filteredData = [];
 
-async function loadStocks() {
-    fetch(URL)
-        .then(response => {
-            if(!response.ok) {
-                throw new Error(`we have a problem: ${response.status}`)
-            }
-            return response.json();
-        })
-        .then(data => {
-            let i = 0;
-            let dataArr = data.length;
-            while(i < dataArr) {
-                stockArray.push(
-                    {stockName: data[i].name, stockSymbol: data[i].symbol}
-                )
+// async function loadStocks() {
+//     fetch(URL)
+//         .then(response => {
+//             if(!response.ok) {
+//                 throw new Error(`we have a problem: ${response.status}`)
+//             }
+//             return response.json();
+//         })
+//         .then(data => {
+//             let i = 0;
+//             let dataArr = data.length;
+//             while(i < dataArr) {
+//                 stockArray.push(
+//                     {stockName: data[i].name, stockSymbol: data[i].symbol}
+//                 )
                     
-            i++
-            }
-            stockArray.sort(compare);
-            console.log(stockArray)
-        })
-}
-loadStocks();
+//             i++
+//             }
+//             // return stockArray
+//         })
+// }
+// loadStocks();
+  let matchList = document.getElementById("stockList");
 
-function compare(a, b) {
-    if (a.stockName < b.stockName){
-      return -1;
-    }
-    if (a.stockName > b.stockName){
-      return 1;
-    }
-    return 0;
+const searchStock = async (searchText) => {
+  const res = await fetch(URL);
+  const stocks = await res.json();
+
+  // get matches for current input
+  let matches = stocks.filter(stock => {
+    const reg_ex = new RegExp(`^${searchText}`,'gi');
+    return stock.name.match(reg_ex) || stock.symbol.match(reg_ex);
+  })
+
+  if(searchBar.length === 0) {
+    matches = [];
+    matchList.innerHTML = '';
   }
+  display(matches)
 
-  searchBar.addEventListener("keyup", (e) => {
-        console.log(stockArray.length)
-        let value = e.target.value.toLowerCase();
-    
-        filteredData = stockArray.filter(payload => {
-            return payload.stockName.charAt(0) === value ||
-            payload.stockSymbol.charAt(0) === value;
-    
-        })
-        console.log(filteredData)
-    })
-    
+}
+
+searchBar.addEventListener("input", (e) => {
+  let value = e.target.value;
+  searchStock(value)
+})
 
   function display(stock) {
     let carPayload = stock.map(payload => {
         return `<li class="character">
-        <h3>${payload.stockName}</h3>
-        <h3>${payload.stockSymbol}</h3>
+        <h3>${payload.name}</h3>
+        <h3>${payload.symbol}</h3>
         </li>`
     })
 
-    document.getElementById("stockList").innerHTML = carPayload;
+    matchList.innerHTML = carPayload;
 }
